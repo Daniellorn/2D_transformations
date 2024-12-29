@@ -2,16 +2,20 @@
 #include "matrix.h"
 
 Ekran::Ekran(QWidget *parent)
-    : QWidget{parent}
+    : QWidget{parent}, m_translateXValue(0), m_translateYValue(0),
+    m_rotationValue(0), m_scaleXValue(1), m_scaleYValue(1), m_shearXValue(0),
+    m_shearYValue(0)
 {
 
-    m_img = QImage("Images/Obrazek1.jpg");
-    m_canvas = QImage(1000, 1000, QImage::Format_RGB32);
+    m_img = QImage("Images/Obrazek1.png");
+    m_canvas = QImage(900, 700, QImage::Format_RGB32);
+    m_canvas.fill(Qt::white);
 
 
 
     setupUI();
 
+    transform(0, 0, 0, 1, 1, 0, 0);
 }
 
 Ekran::~Ekran()
@@ -20,51 +24,30 @@ Ekran::~Ekran()
     m_leftPanel = nullptr;
     m_rightPanel = nullptr;
     m_rightLayout = nullptr;
-    m_combobox = nullptr;
-    m_slider = nullptr;
-    m_alphaLabel = nullptr;
-    m_listWidget = nullptr;
+    m_translateXSlider = nullptr;
+    m_translateYSlider = nullptr;
+    m_translationLabel = nullptr;
+    m_rotateLabel = nullptr;
+    m_rotateSlider = nullptr;
+    m_scalingLabel = nullptr;
+    m_scaleXSlider = nullptr;
+    m_scaleYSlider = nullptr;
+    m_shearingXSlider = nullptr;
+    m_shearingYSlider = nullptr;
+    m_shearingLabel = nullptr;
     m_spacer = nullptr;
 }
 
 void Ekran::paintEvent(QPaintEvent *event)
 {
-    //QPainter p(this);
-//
-    //if (m_img.isNull())
-    //{
-    //    qDebug() << "Blad wczytania obrazu ";
-    //    std::exit(-1);
-    //}
-
-    //p.drawImage(25, 25, m_img);
-
-    // Tworzymy QPainter rysującego na m_canvas
-    //QPainter canvasPainter(&m_canvas);
-//
-    //// Czyścimy płótno (opcjonalnie)
-    //canvasPainter.fillRect(m_canvas.rect(), Qt::white);
-//
-    //// Rysujemy obraz m_img na płótnie w pozycji (x, y)
-    //canvasPainter.drawImage(25, 25, m_img);
-
-    //translation(360, 100);
-    rotation(M_PI/4);
-    //scaleX(2);
-    //scaleY(2);
-    //shearingX(-2);
-    //shearingY(1);
-
-
     QPainter p(this);
-
-    //p.fillRect(QRect(0, 0, 1000, 700), Qt::white);
 
     if (m_img.isNull())
     {
         qDebug() << "Blad wczytania obrazu ";
         std::exit(-1);
     }
+
     p.drawImage(25, 25, m_canvas);
 
 }
@@ -77,221 +60,146 @@ void Ekran::setupUI()
     m_leftPanel->setMinimumSize(1000, 700);
     m_mainLayout->addWidget(m_leftPanel);
 
-    m_spacer = new QSpacerItem(20, 640, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_spacer = new QSpacerItem(5, 100, QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_mainLayout->addItem(m_spacer);
 
     m_rightPanel = new QWidget(this);
     m_rightLayout = new QVBoxLayout(m_rightPanel);
 
-    m_combobox = new QComboBox(this);
-    m_combobox->addItem("Normal");
-    m_combobox->addItem("Multiply");
-    m_combobox->addItem("Screen");
-    m_combobox->addItem("Overlay");
-    m_combobox->addItem("Darken");
-    m_combobox->addItem("Lighten");
-    m_combobox->addItem("Difference");
-    m_combobox->addItem("Additive");
+    m_translationLabel = new QLabel("Translation", this);
+    m_rightLayout->addWidget(m_translationLabel);
 
-    m_rightLayout->addWidget(m_combobox);
+    m_translateXSlider = new QSlider(Qt::Horizontal, this);
+    m_translateXSlider->setRange(-100, 500);
+    m_translateXSlider->setMinimumWidth(200);
+    m_translateXSlider->setValue(0);
+    m_translateYSlider = new QSlider(Qt::Horizontal, this);
+    m_translateYSlider->setRange(-100, 500);
+    m_translateYSlider->setValue(0);
+    m_rightLayout->addWidget(m_translateXSlider);
+    m_rightLayout->addWidget(m_translateYSlider);
 
-    m_alphaLabel = new QLabel("Alpha: 100", this);
-    m_rightLayout->addWidget(m_alphaLabel);
+    m_rotateLabel = new QLabel("Rotation", this);
+    m_rightLayout->addWidget(m_rotateLabel);
 
-    m_slider = new QSlider(Qt::Horizontal, this);
-    m_slider->setRange(0, 100);
-    m_slider->setValue(100);
+    m_rotateSlider = new QSlider(Qt::Horizontal, this);
+    m_rotateSlider->setRange(0, 360);
+    m_rightLayout->addWidget(m_rotateSlider);
 
-    m_rightLayout->addWidget(m_slider);
+    m_scalingLabel = new QLabel("Scale", this);
+    m_rightLayout->addWidget(m_scalingLabel);
 
-    //connect(m_slider, &QSlider::valueChanged, this, &Ekran::updateLabel);
-    //connect(m_slider, &QSlider::valueChanged, this, &Ekran::updateSliderValue);
-    //connect(m_combobox, &QComboBox::currentTextChanged, this, &Ekran::updateMode);
+    m_scaleXSlider = new QSlider(Qt::Horizontal, this);
+    m_scaleXSlider->setRange(-100, 100);
+    m_scaleXSlider->setValue(0);
+    m_scaleYSlider = new QSlider(Qt::Horizontal, this);
+    m_scaleYSlider->setRange(-100, 100);
+    m_scaleYSlider->setValue(0);
+    m_rightLayout->addWidget(m_scaleXSlider);
+    m_rightLayout->addWidget(m_scaleYSlider);
 
+    m_shearingLabel = new QLabel("Shearing", this);
+    m_rightLayout->addWidget(m_shearingLabel);
 
-    m_listWidget = new QListWidget(this);
-    m_rightLayout->addWidget(m_listWidget);
+    m_shearingXSlider = new QSlider(Qt::Horizontal, this);
+    m_shearingXSlider->setRange(-100, 100);
+    m_shearingXSlider->setValue(0);
+    m_shearingYSlider = new QSlider(Qt::Horizontal, this);
+    m_shearingYSlider->setRange(-100, 100);
+    m_shearingYSlider->setValue(0);
+    m_rightLayout->addWidget(m_shearingXSlider);
+    m_rightLayout->addWidget(m_shearingYSlider);
 
-    //connect(m_listWidget, &QListWidget::itemSelectionChanged, this, &Ekran::updateUI);
+    m_resetButton = new QPushButton("Reset", this);
+    m_rightLayout->addWidget(m_resetButton);
 
     m_rightPanel->setLayout(m_rightLayout);
     m_mainLayout->addWidget(m_rightPanel);
 
     setLayout(m_mainLayout);
 
+    connect(m_translateXSlider, &QSlider::valueChanged, this, &Ekran::onTranslateXChanged);
+    connect(m_translateYSlider, &QSlider::valueChanged, this, &Ekran::onTranslateYChanged);
+    connect(m_rotateSlider, &QSlider::valueChanged, this, &Ekran::onRotationChanged);
+    connect(m_scaleXSlider, &QSlider::valueChanged, this, &Ekran::onScaleXChanged);
+    connect(m_scaleYSlider, &QSlider::valueChanged, this, &Ekran::onScaleYChanged);
+    connect(m_shearingXSlider, &QSlider::valueChanged, this, &Ekran::onShearXChanged);
+    connect(m_shearingYSlider, &QSlider::valueChanged, this, &Ekran::onShearYChanged);
+
+
+    connect(m_resetButton, &QPushButton::clicked, this, &Ekran::onButtonClicked);
+
 }
 
-void Ekran::translation(float translationX, float translationY)
+void Ekran::transform(float translationX, float translationY, float radian, float scaleX, float scaleY, float shearingX, float shearingY)
 {
-    int ymax = m_img.height();
-    int xmax = m_img.width();
+    math::vec3 imgCenter(-m_img.width() / 2, -m_img.height() / 2);
 
-    math::vec3 vec(translationX, translationY);
+    math::mat3 translationToZero(1.0f);
+    translationToZero = math::mat3::translation(translationToZero, imgCenter);
 
-    math::mat3 matrix(1.0f);
+    math::mat3 scaleMatrix(1.0f);
+    math::vec3 vec(scaleX, scaleY);
+    scaleMatrix = math::mat3::scaleXY(scaleMatrix, vec);
 
-    matrix = math::mat3::translation(matrix, vec);
+    math::mat3 shearingXMatrix(1.0f);
+    shearingXMatrix = math::mat3::shearingX(shearingXMatrix, shearingX);
 
-    //matrix.print();
+    math::mat3 shearingYMatrix(1.0f);
+    shearingYMatrix = math::mat3::shearingY(shearingYMatrix, shearingY);
+
+    math::mat3 rotationMatrix(1.0f);
+    rotationMatrix = math::mat3::rotation(rotationMatrix, radian);
+
+    math::mat3 translationMatrix(1.0f);
+    math::vec3 translationVec(translationX, translationY);
+    translationMatrix = math::mat3::translation(translationMatrix, translationVec);
+
+    math::vec3 translationCenter(m_img.width() / 2, m_img.height() / 2);
+    math::mat3 translationToCenter(1.0f);
+    translationToCenter = math::mat3::translation(translationToCenter, translationCenter);
+
+    math::mat3 transformationMatrix;
+
+    //transformationMatrix = translationToCenter * translationMatrix * rotationMatrix *
+    //                       shearingYMatrix * shearingXMatrix * scaleMatrix * translationToZero;
+
+   // transformationMatrix = translationToZero * scaleMatrix * shearingXMatrix *
+   //                        shearingYMatrix * rotationMatrix * translationMatrix * translationToCenter;
+
+
+    transformationMatrix = translationToZero * scaleMatrix * rotationMatrix * shearingXMatrix *
+                           shearingYMatrix * translationMatrix * translationToCenter;
+
+    int xmax = m_canvas.width();
+    int ymax = m_canvas.height();
+    PixelColor imgColor;
+
+    m_canvas.fill(Qt::white);
 
     for (int y = 0; y < ymax; y++)
     {
         for (int x = 0; x < xmax; x++)
         {
-            PixelColor pixel = getPixel(m_img, x, y);
 
             math::vec3 vector(x, y);
 
-            vector = matrix * vector;
+            vector = transformationMatrix * vector;
 
-            //qDebug() << "x: " << vector.x << " " << "y: " << vector.y;
+            if (vector.x > 0 && vector.x < m_img.width() && vector.y > 0 && vector.y < m_img.height())
+            {
+                imgColor = getPixel(m_img, vector.x, vector.y);
+            }
 
-            if (vector.x <= 0 || vector.x >= 1000 || vector.y <= 0 || vector.y >= 1000)
-                continue;
 
-            setPixel(m_canvas, vector.x, vector.y, pixel);
+           if (x > 0 && x < xmax && y > 0 && y < ymax)
+            {
+                setPixel(m_canvas, x, y, imgColor);
+            }
         }
     }
-}
 
-void Ekran::rotation(float radian)
-{
-    math::mat3 matrix(1.0f);
-    matrix = math::mat3::rotation(matrix, radian);
-
-    int ymax = m_img.height();
-    int xmax = m_img.width();
-
-    for (int y = 0; y < ymax; y++)
-    {
-        for (int x = 0; x < xmax; x++)
-        {
-            PixelColor pixel = getPixel(m_img, x, y);
-
-            math::vec3 vector(x, y);
-
-            vector = matrix * vector;
-
-            //qDebug() << "x: " << vector.x << " " << "y: " << vector.y;
-
-            if (vector.x <= 0 || vector.x >= 1000 || vector.y <= 0 || vector.y >= 1000)
-                continue;
-
-            setPixel(m_canvas, vector.x, vector.y, pixel);
-        }
-    }
-}
-
-void Ekran::scaleX(float x)
-{
-    math::mat3 matrix(1.0f);
-    matrix = math::mat3::scaleX(matrix, x);
-
-    int ymax = m_img.height();
-    int xmax = m_img.width();
-
-    for (int y = 0; y < ymax; y++)
-    {
-        for (int x = 0; x < xmax; x++)
-        {
-            PixelColor pixel = getPixel(m_img, x, y);
-
-            math::vec3 vector(x, y);
-
-            vector = matrix * vector;
-
-            //qDebug() << "x: " << vector.x << " " << "y: " << vector.y;
-
-            if (vector.x <= 0 || vector.x >= 1000 || vector.y <= 0 || vector.y >= 1000)
-                continue;
-
-            setPixel(m_canvas, vector.x, vector.y, pixel);
-        }
-    }
-}
-
-void Ekran::scaleY(float y)
-{
-    math::mat3 matrix(1.0f);
-    matrix = math::mat3::scaleY(matrix, y);
-
-    int ymax = m_img.height();
-    int xmax = m_img.width();
-
-    for (int y = 0; y < ymax; y++)
-    {
-        for (int x = 0; x < xmax; x++)
-        {
-            PixelColor pixel = getPixel(m_img, x, y);
-
-            math::vec3 vector(x, y);
-
-            vector = matrix * vector;
-
-            //qDebug() << "x: " << vector.x << " " << "y: " << vector.y;
-
-            if (vector.x <= 0 || vector.x >= 1000 || vector.y <= 0 || vector.y >= 1000)
-                continue;
-
-            setPixel(m_canvas, vector.x, vector.y, pixel);
-        }
-    }
-}
-
-void Ekran::shearingX(float value)
-{
-    math::mat3 matrix(1.0f);
-    matrix = math::mat3::shearingX(matrix, value);
-
-    int ymax = m_img.height();
-    int xmax = m_img.width();
-
-    for (int y = 0; y < ymax; y++)
-    {
-        for (int x = 0; x < xmax; x++)
-        {
-            PixelColor pixel = getPixel(m_img, x, y);
-
-            math::vec3 vector(x, y);
-
-            vector = matrix * vector;
-
-            //qDebug() << "x: " << vector.x << " " << "y: " << vector.y;
-
-            if (vector.x <= 0 || vector.x >= 1000 || vector.y <= 0 || vector.y >= 1000)
-                continue;
-
-            setPixel(m_canvas, vector.x, vector.y, pixel);
-        }
-    }
-}
-
-void Ekran::shearingY(float value)
-{
-    math::mat3 matrix(1.0f);
-    matrix = math::mat3::shearingY(matrix, value);
-
-    int ymax = m_img.height();
-    int xmax = m_img.width();
-
-    for (int y = 0; y < ymax; y++)
-    {
-        for (int x = 0; x < xmax; x++)
-        {
-            PixelColor pixel = getPixel(m_img, x, y);
-
-            math::vec3 vector(x, y);
-
-            vector = matrix * vector;
-
-            //qDebug() << "x: " << vector.x << " " << "y: " << vector.y;
-
-            if (vector.x <= 0 || vector.x >= 1000 || vector.y <= 0 || vector.y >= 1000)
-                continue;
-
-            setPixel(m_canvas, vector.x, vector.y, pixel);
-        }
-    }
+    update();
 }
 
 PixelColor Ekran::getPixel(const QImage &img, int x, int y) const
@@ -317,4 +225,76 @@ void Ekran::setPixel(QImage &img, int x, int y, const PixelColor &color)
     line[4*x + 1] = green; //green
     line[4*x + 2] = red; //red
     //line[4*x + 3] = 255; // alpha
+}
+
+void Ekran::onTranslateXChanged(int value)
+{
+    m_translateXValue = value;
+    transform(m_translateXValue, m_translateYValue, m_rotationValue,
+              m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
+}
+
+void Ekran::onTranslateYChanged(int value)
+{
+    m_translateYValue = value;
+    transform(m_translateXValue, m_translateYValue, m_rotationValue,
+              m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
+}
+
+void Ekran::onRotationChanged(int value)
+{
+    m_rotationValue = value * M_PI / 180;
+    transform(m_translateXValue, m_translateYValue, m_rotationValue,
+              m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
+}
+
+void Ekran::onScaleXChanged(int value)
+{
+    m_scaleXValue = value;
+    transform(m_translateXValue, m_translateYValue, m_rotationValue,
+              m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
+}
+
+void Ekran::onScaleYChanged(int value)
+{
+    m_scaleYValue = value;
+    transform(m_translateXValue, m_translateYValue, m_rotationValue,
+              m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
+}
+
+void Ekran::onShearXChanged(int value)
+{
+    m_shearXValue = value / 100.0f;
+    transform(m_translateXValue, m_translateYValue, m_rotationValue,
+              m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
+}
+
+void Ekran::onShearYChanged(int value)
+{
+    m_shearYValue = value / 100.0f;
+    transform(m_translateXValue, m_translateYValue, m_rotationValue,
+              m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
+}
+
+void Ekran::onButtonClicked()
+{
+    m_translateXValue = 0;
+    m_translateYValue = 0;
+    m_rotationValue = 0;
+    m_scaleXValue = 1;
+    m_scaleYValue = 1;
+    m_shearXValue = 0.0f;
+    m_shearYValue = 0.0f;
+
+    m_translateXSlider->setValue(0);
+    m_translateYSlider->setValue(0);
+    m_rotateSlider->setValue(0);
+    m_scaleXSlider->setValue(1);
+    m_scaleYSlider->setValue(1);
+    m_shearingXSlider->setValue(0);
+    m_shearingYSlider->setValue(0);
+
+    transform(m_translateXValue, m_translateYValue, m_rotationValue,
+              m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
+
 }

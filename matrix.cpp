@@ -21,6 +21,7 @@ namespace math {
         }
     }
 
+
     float& mat3::operator()(int row, int col)
     {
         return m_matrix[row * m_colnum + col];
@@ -65,8 +66,8 @@ namespace math {
     {
         mat3 result = matrix;
 
-        result(0,2) = vector.x;
-        result(1,2) = vector.y;
+        result(0,2) = -vector.x;
+        result(1,2) = -vector.y;
         result(2,2) = 1.0f;
 
         return result;
@@ -77,8 +78,8 @@ namespace math {
         mat3 result = matrix;
 
         result(0,0) = std::cos(radian);
-        result(0,1) = -std::sin(radian);
-        result(1,0) = std::sin(radian);
+        result(0,1) = std::sin(radian);
+        result(1,0) = -std::sin(radian);
         result(1,1) = std::cos(radian);
 
         return result;
@@ -88,7 +89,7 @@ namespace math {
     {
         mat3 result = matrix;
 
-        result(0,0) = x;
+        result(0,0) = 1/x;
 
         return result;
     }
@@ -97,7 +98,7 @@ namespace math {
     {
         mat3 result = matrix;
 
-        result(1,1) = y;
+        result(1,1) = 1/y;
 
         return result;
     }
@@ -106,8 +107,8 @@ namespace math {
     {
         mat3 result = matrix;
 
-        result(0,0) = vector.x;
-        result(1,1) = vector.y;
+        result(0,0) = 1/vector.x;
+        result(1,1) = 1/vector.y;
         result(2,2) = 1;
 
         return result;
@@ -117,7 +118,7 @@ namespace math {
     {
         mat3 result = matrix;
 
-        result(0,1) = value;
+        result(0,1) = -value;
 
         return result;
     }
@@ -126,7 +127,7 @@ namespace math {
     {
         mat3 result = matrix;
 
-        result(1,0) = value;
+        result(1,0) = -value;
 
         return result;
     }

@@ -20,6 +20,7 @@ namespace math {
 
         mat3 operator*(const mat3& other);
         vec3 operator*(const vec3& vector);
+        mat3& operator=(const mat3& other) = default;
 
         static mat3 translation(const mat3& matrix, const vec3& vector);
         static mat3 rotation(const mat3& matrix, float radian);
