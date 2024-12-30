@@ -15,7 +15,7 @@ Ekran::Ekran(QWidget *parent)
 
     setupUI();
 
-    transform(0, 0, 0, 1, 1, 0, 0);
+     transform(0, 0, 0, 1, 1, 0, 0);
 }
 
 Ekran::~Ekran()
@@ -60,21 +60,22 @@ void Ekran::setupUI()
     m_leftPanel->setMinimumSize(1000, 700);
     m_mainLayout->addWidget(m_leftPanel);
 
-    m_spacer = new QSpacerItem(5, 100, QSizePolicy::Expanding, QSizePolicy::Expanding);
-    m_mainLayout->addItem(m_spacer);
+    //m_spacer = new QSpacerItem(5, 100, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    //m_mainLayout->addItem(m_spacer);
 
     m_rightPanel = new QWidget(this);
     m_rightLayout = new QVBoxLayout(m_rightPanel);
+    m_rightPanel->setMinimumSize(300, 750);
 
     m_translationLabel = new QLabel("Translation", this);
     m_rightLayout->addWidget(m_translationLabel);
 
     m_translateXSlider = new QSlider(Qt::Horizontal, this);
-    m_translateXSlider->setRange(-100, 500);
-    m_translateXSlider->setMinimumWidth(200);
+    m_translateXSlider->setRange(-m_canvas.width()/2, m_canvas.width()/2);
+    m_translateXSlider->setMinimumWidth(0);
     m_translateXSlider->setValue(0);
     m_translateYSlider = new QSlider(Qt::Horizontal, this);
-    m_translateYSlider->setRange(-100, 500);
+    m_translateYSlider->setRange(-m_canvas.height()/2, m_canvas.height()/2);
     m_translateYSlider->setValue(0);
     m_rightLayout->addWidget(m_translateXSlider);
     m_rightLayout->addWidget(m_translateYSlider);
@@ -161,6 +162,19 @@ void Ekran::transform(float translationX, float translationY, float radian, floa
 
     math::mat3 transformationMatrix;
 
+    float imgCenterX = m_img.width() / 2.0f;
+    float imgCenterY = m_img.height() / 2.0f;
+
+    float canvasCenterX = m_canvas.width() / 2.0f;
+    float canvasCenterY = m_canvas.height() / 2.0f;
+
+    float displacementVecX = canvasCenterX - imgCenterX;
+    float displacementVecY = canvasCenterY - imgCenterY;
+
+    math::vec3 displacementVec(displacementVecX, displacementVecY);
+    math::mat3 displacementMatrix(1.0f);
+    displacementMatrix = math::mat3::translation(displacementMatrix, displacementVec);
+
     //transformationMatrix = translationToCenter * translationMatrix * rotationMatrix *
     //                       shearingYMatrix * shearingXMatrix * scaleMatrix * translationToZero;
 
@@ -169,7 +183,7 @@ void Ekran::transform(float translationX, float translationY, float radian, floa
 
 
     transformationMatrix = translationToZero * scaleMatrix * rotationMatrix * shearingXMatrix *
-                           shearingYMatrix * translationMatrix * translationToCenter;
+                           shearingYMatrix * translationMatrix * translationToCenter * displacementMatrix;
 
     int xmax = m_canvas.width();
     int ymax = m_canvas.height();
@@ -186,9 +200,26 @@ void Ekran::transform(float translationX, float translationY, float radian, floa
 
             vector = transformationMatrix * vector;
 
-            if (vector.x > 0 && vector.x < m_img.width() && vector.y > 0 && vector.y < m_img.height())
+            if (std::ceil(vector.x) > 0 && std::ceil(vector.x) < m_img.width() && std::ceil(vector.y) > 0 && std::ceil(vector.y) < m_img.height())
             {
-                imgColor = getPixel(m_img, vector.x, vector.y);
+                //imgColor = getPixel(m_img, vector.x, vector.y);
+
+                float a = vector.x - std::floor(vector.x);
+                float b = vector.y - std::floor(vector.y);
+
+                PixelColor P1 = getPixel(m_img, std::floor(vector.x), std::ceil(vector.y));
+                PixelColor P2 = getPixel(m_img, std::ceil(vector.x), std::ceil(vector.y));
+                PixelColor P3 = getPixel(m_img, std::ceil(vector.x), std::floor(vector.y));
+                PixelColor P4 = getPixel(m_img, std::floor(vector.x), std::floor(vector.y));
+
+                imgColor.R = b * ((1 - a) * P1.R + a * P2.R) + (1 - b) * ((1 - a) * P4.R + a * P3.R);
+                imgColor.G = b * ((1 - a) * P1.G + a * P2.G) + (1 - b) * ((1 - a) * P4.G + a * P3.G);
+                imgColor.B = b * ((1 - a) * P1.B + a * P2.B) + (1 - b) * ((1 - a) * P4.B + a * P3.B);
+
+            }
+            else
+            {
+                imgColor = PixelColor(255, 255, 255);
             }
 
 
