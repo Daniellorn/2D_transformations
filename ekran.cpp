@@ -20,22 +20,39 @@ Ekran::Ekran(QWidget *parent)
 
 Ekran::~Ekran()
 {
-    m_mainLayout = nullptr;
-    m_leftPanel = nullptr;
-    m_rightPanel = nullptr;
-    m_rightLayout = nullptr;
-    m_translateXSlider = nullptr;
-    m_translateYSlider = nullptr;
-    m_translationLabel = nullptr;
-    m_rotateLabel = nullptr;
-    m_rotateSlider = nullptr;
-    m_scalingLabel = nullptr;
-    m_scaleXSlider = nullptr;
-    m_scaleYSlider = nullptr;
-    m_shearingXSlider = nullptr;
-    m_shearingYSlider = nullptr;
-    m_shearingLabel = nullptr;
-    m_spacer = nullptr;
+    //delete m_mainLayout;
+    //delete m_leftPanel;
+    //delete m_rightPanel;
+    //delete m_rightLayout;
+    //delete m_translateXSlider;
+    //delete m_translateYSlider;
+    //delete m_translationLabel;
+    //delete m_rotateLabel;
+    //delete m_rotateSlider;
+    //delete m_scalingLabel;
+    //delete m_scaleXSlider;
+    //delete m_scaleYSlider;
+    //delete m_shearingXSlider;
+    //delete m_shearingYSlider;
+    //delete m_shearingLabel;
+    //delete m_spacer;
+
+    //m_mainLayout = nullptr;
+    //m_leftPanel = nullptr;
+    //m_rightPanel = nullptr;
+    //m_rightLayout = nullptr;
+    //m_translateXSlider = nullptr;
+    //m_translateYSlider = nullptr;
+    //m_translationLabel = nullptr;
+    //m_rotateLabel = nullptr;
+    //m_rotateSlider = nullptr;
+    //m_scalingLabel = nullptr;
+    //m_scaleXSlider = nullptr;
+    //m_scaleYSlider = nullptr;
+    //m_shearingXSlider = nullptr;
+    //m_shearingYSlider = nullptr;
+    //m_shearingLabel = nullptr;
+    //m_spacer = nullptr;
 }
 
 void Ekran::paintEvent(QPaintEvent *event)
