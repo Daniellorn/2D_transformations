@@ -70,14 +70,20 @@ void Ekran::setupUI()
     m_scalingLabel = new QLabel("Scale", this);
     m_rightLayout->addWidget(m_scalingLabel);
 
-    m_scaleXSlider = new QSlider(Qt::Horizontal, this);
-    m_scaleXSlider->setRange(-100, 100);
-    m_scaleXSlider->setValue(0);
-    m_scaleYSlider = new QSlider(Qt::Horizontal, this);
-    m_scaleYSlider->setRange(-100, 100);
-    m_scaleYSlider->setValue(0);
-    m_rightLayout->addWidget(m_scaleXSlider);
-    m_rightLayout->addWidget(m_scaleYSlider);
+    m_scaleXSpinBox = new QDoubleSpinBox(this);
+    m_scaleXSpinBox->setRange(0.1, 10.0);
+    m_scaleXSpinBox->setValue(1.0);
+    m_scaleXSpinBox->setDecimals(2);
+    m_scaleXSpinBox->setSingleStep(0.1);
+
+    m_scaleYSpinBox = new QDoubleSpinBox(this);
+    m_scaleYSpinBox->setRange(0.1, 10.0);
+    m_scaleYSpinBox->setValue(1.0);
+    m_scaleYSpinBox->setDecimals(2);
+    m_scaleYSpinBox->setSingleStep(0.1);
+
+    m_rightLayout->addWidget(m_scaleXSpinBox);
+    m_rightLayout->addWidget(m_scaleYSpinBox);
 
     m_shearingLabel = new QLabel("Shearing", this);
     m_rightLayout->addWidget(m_shearingLabel);
@@ -102,8 +108,8 @@ void Ekran::setupUI()
     connect(m_translateXSlider, &QSlider::valueChanged, this, &Ekran::onTranslateXChanged);
     connect(m_translateYSlider, &QSlider::valueChanged, this, &Ekran::onTranslateYChanged);
     connect(m_rotateSlider, &QSlider::valueChanged, this, &Ekran::onRotationChanged);
-    connect(m_scaleXSlider, &QSlider::valueChanged, this, &Ekran::onScaleXChanged);
-    connect(m_scaleYSlider, &QSlider::valueChanged, this, &Ekran::onScaleYChanged);
+    connect(m_scaleXSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &Ekran::onScaleXChanged);
+    connect(m_scaleYSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &Ekran::onScaleYChanged);
     connect(m_shearingXSlider, &QSlider::valueChanged, this, &Ekran::onShearXChanged);
     connect(m_shearingYSlider, &QSlider::valueChanged, this, &Ekran::onShearYChanged);
 
@@ -259,16 +265,18 @@ void Ekran::onRotationChanged(int value)
               m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
 }
 
-void Ekran::onScaleXChanged(int value)
+void Ekran::onScaleXChanged(double value)
 {
-    m_scaleXValue = value;
+    m_scaleXValue = (float)value;
+
     transform(m_translateXValue, m_translateYValue, m_rotationValue,
               m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
 }
 
-void Ekran::onScaleYChanged(int value)
+void Ekran::onScaleYChanged(double value)
 {
-    m_scaleYValue = value;
+    m_scaleYValue = (float)value;
+
     transform(m_translateXValue, m_translateYValue, m_rotationValue,
               m_scaleXValue, m_scaleYValue, m_shearXValue, m_shearYValue);
 }
@@ -292,16 +300,16 @@ void Ekran::onButtonClicked()
     m_translateXValue = 0;
     m_translateYValue = 0;
     m_rotationValue = 0;
-    m_scaleXValue = 1;
-    m_scaleYValue = 1;
+    m_scaleXValue = 1.0f;
+    m_scaleYValue = 1.0f;
     m_shearXValue = 0.0f;
     m_shearYValue = 0.0f;
 
     m_translateXSlider->setValue(0);
     m_translateYSlider->setValue(0);
     m_rotateSlider->setValue(0);
-    m_scaleXSlider->setValue(1);
-    m_scaleYSlider->setValue(1);
+    m_scaleXSpinBox->setValue(1.0);
+    m_scaleYSpinBox->setValue(1.0);
     m_shearingXSlider->setValue(0);
     m_shearingYSlider->setValue(0);
 

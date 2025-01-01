@@ -9,6 +9,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QPushButton>
+#include <QDoubleSpinBox>
 
 struct PixelColor
 {
@@ -58,8 +59,8 @@ private:
     QSlider* m_translateXSlider;
     QSlider* m_translateYSlider;
     QSlider* m_rotateSlider;
-    QSlider* m_scaleXSlider;
-    QSlider* m_scaleYSlider;
+    QDoubleSpinBox* m_scaleXSpinBox;
+    QDoubleSpinBox* m_scaleYSpinBox;
     QSlider* m_shearingXSlider;
     QSlider* m_shearingYSlider;
 
@@ -75,8 +76,8 @@ private:
     int m_translateXValue;
     int m_translateYValue;
     float m_rotationValue;
-    int m_scaleXValue;
-    int m_scaleYValue;
+    float m_scaleXValue;
+    float m_scaleYValue;
     float m_shearXValue;
     float m_shearYValue;
 
@@ -85,8 +86,8 @@ private slots:
     void onTranslateXChanged(int value);
     void onTranslateYChanged(int value);
     void onRotationChanged(int value);
-    void onScaleXChanged(int value);
-    void onScaleYChanged(int value);
+    void onScaleXChanged(double value);
+    void onScaleYChanged(double value);
     void onShearXChanged(int value);
     void onShearYChanged(int value);
 
